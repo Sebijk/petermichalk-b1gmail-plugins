@@ -2,16 +2,16 @@
 declare(strict_types=1);
 
 /**
- * Add Alias Plugin
+ * Add Contact Plugin
  * 
- * With this plugin you can create aliases for groups, individual users
+ * With this plugin you can create address book entries for groups, individual users
  * or directly for all users from the admin area.
- *  
+ * 
  * @version 1.2.0
  * @since PHP 8.3
  * @license GPL
  */
-class addalias extends BMPlugin 
+class addcontact extends BMPlugin 
 {
 	/**
 	 * Action constants for admin pages
@@ -36,7 +36,7 @@ class addalias extends BMPlugin
 	public function __construct()
 	{
 		// PHP 8.3: Initialize readonly properties
-		$this->pluginName 			= 'Add Alias';
+		$this->pluginName 			= 'Add Contact';
 		$this->pluginVersion 		= '1.2.0';
 		$this->pluginAuthor 		= 'Peter Michalk';
 
@@ -45,11 +45,11 @@ class addalias extends BMPlugin
 		$this->designedfor			= '7.3.0';
 		$this->type					= BMPLUGIN_DEFAULT;
 
-		$this->author				= $this->pluginAuthor;	
+		$this->author				= $this->pluginAuthor;
 
 		$this->admin_pages			= true;
 		$this->admin_page_title		= $this->pluginName;
-		$this->admin_page_icon		= "addalias_icon.png";
+		$this->admin_page_icon		= "addcontact_icon.png";
 	}
 
 	/**
@@ -89,13 +89,13 @@ class addalias extends BMPlugin
 
 		// Plugin call with action
 		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
-			$tpl->assign('page', $this->_templatePath('addalias1.pref.tpl'));
+			$tpl->assign('page', $this->_templatePath('addcontact1.pref.tpl'));
 			$this->_Page1();
 		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
-			$tpl->assign('page', $this->_templatePath('addalias2.pref.tpl'));
+			$tpl->assign('page', $this->_templatePath('addcontact2.pref.tpl'));
 		}
 	}
-	
+
 	/**
 	 * Language variables handler
 	 * 
@@ -114,13 +114,21 @@ class addalias extends BMPlugin
 	{
 		global $lang_user;
 
-		$lang_admin['addalias_name']		= "Add Alias";
-		$lang_admin['addalias_text']		= "Mit diesem Plugin k&ouml;nnen Sie einzelnen Benutzern einen Alias erstellen.";
+		$lang_admin['addcontact_name']		= "Add Contact";
+		$lang_admin['addcontact_text']		= "With this plugin you can create address book entries for groups, individual users or directly for all users from the admin area.";
 
-		$lang_admin['addresstaken']			= $lang_user['addresstaken'] ?? '';
-		$lang_admin['alias']				= $lang_user['alias'] ?? '';
-		$lang_admin['aliastype_1']			= $lang_user['aliastype_1'] ?? '';
-		$lang_admin['aliastype_2']			= $lang_user['aliastype_2'] ?? '';
+		$lang_admin['addcontact']			= $lang_user['addcontact_name'] ?? '';
+		$lang_admin['surname']				= $lang_user['surname'] ?? '';
+		$lang_admin['priv']					= $lang_user['priv'] ?? '';
+		$lang_admin['streetnr']				= $lang_user['streetnr'] ?? '';
+		$lang_admin['phone']				= $lang_user['phone'] ?? '';
+		$lang_admin['mobile']				= $lang_user['mobile'] ?? '';
+		$lang_admin['work']					= $lang_user['work'] ?? '';
+		$lang_admin['company']				= $lang_user['company'] ?? '';
+		$lang_admin['position']				= $lang_user['position'] ?? '';
+		$lang_admin['web']					= $lang_user['web'] ?? '';
+		$lang_admin['birthday']				= $lang_user['birthday'] ?? '';
+		$lang_admin['comment']				= $lang_user['comment'] ?? '';
 	}
 
 	/**
@@ -154,13 +162,13 @@ class addalias extends BMPlugin
 	}
 
 	/**
-	 * Main function for alias creation
+	 * Main function for contact creation
 	 * 
 	 * This method is the core of the plugin. It:
 	 * - Loads all available groups from the database
 	 * - Loads users based on group selection
-	 * - Processes user input for alias creation
-	 * - Creates aliases for selected users
+	 * - Processes user input for contact creation
+	 * - Creates address book entries for selected users
 	 * - Assigns template variables
 	 * 
 	 * @return void
@@ -170,20 +178,36 @@ class addalias extends BMPlugin
 	 * 
 	 * @uses $_REQUEST['gruppe'] User's group selection
 	 * @uses $_REQUEST['user'] User's user selection
-	 * @uses $_REQUEST['email_domain'] Domain for alias creation
-	 * @uses $_REQUEST['email_local'] Local part of email address
-	 * @uses $_REQUEST['typ_1_email'] Complete email address for type 1 alias
+	 * @uses $_REQUEST['vorname'] First name of contact to be created
+	 * @uses $_REQUEST['nachname'] Last name of contact to be created
+	 * @uses $_REQUEST['firma'] Company name of contact to be created
+	 * @uses $_REQUEST['email'] Email address of contact to be created
+	 * @uses $_REQUEST['strassenr'] Street and house number
+	 * @uses $_REQUEST['plz'] Postal code
+	 * @uses $_REQUEST['ort'] City
+	 * @uses $_REQUEST['land'] Country
+	 * @uses $_REQUEST['tel'] Phone number
+	 * @uses $_REQUEST['fax'] Fax number
+	 * @uses $_REQUEST['handy'] Mobile number
+	 * @uses $_REQUEST['work_*'] Business contact data
+	 * @uses $_REQUEST['anrede'] Salutation
+	 * @uses $_REQUEST['position'] Position/job
+	 * @uses $_REQUEST['web'] Website
+	 * @uses $_REQUEST['kommentar'] Comment/notes
+	 * @uses $_REQUEST['default'] Default address type (work/private)
 	 */
 	private function _Page1(): void
 	{
 		global $tpl, $db, $bm_prefs;
+		
+		$tpl->assign('templ', $bm_prefs['template']);
 
 		/**
 		 * Determine template step:
 		 * 0 = Initial (select group)
 		 * 1 = Group selected (select user)
-		 * 2 = User selected (enter alias data)
-		 * 3 = Alias created (confirmation)
+		 * 2 = User selected (enter contact data)
+		 * 3 = Contact created (confirmation)
 		 */
 		$tpl_use = 0;
 		
@@ -214,9 +238,12 @@ class addalias extends BMPlugin
 			$_REQUEST['gruppe'] = $_REQUEST['gruppe_hidden'];
 		}
 
-		// wenn gruppe alle dann alle user abfraqen
-		if($_REQUEST['gruppe'] == -1)
-		{
+		/**
+		 * Load users based on group selection
+		 * -1 = All users
+		 * Other values = Specific group
+		 */
+		if(($_REQUEST['gruppe'] ?? 0) == -1) {
 			$res = $db->Query('SELECT id, email FROM {pre}users ORDER by email ASC');
 		} else {
 			$res = $db->Query('SELECT id, email FROM {pre}users WHERE gruppe=? ORDER by email ASC', 
@@ -250,104 +277,89 @@ class addalias extends BMPlugin
 		 */
 		if(isset($_REQUEST['user'])) {
 			$tpl_use = 2;
-
-			/**
-			 * Load domain list from b1gMail settings
-			 * and extend with group-specific alias domains
-			 */
-			$domainList = $bm_prefs['domains'];
-			if(!is_array($domainList)) {
-				$domainList = explode(':', $domainList);
-			}
-			
-			/**
-			 * Load additional domains from group alias settings
-			 * These are domains that groups can use for aliases
-			 */
-			$res = $db->Query('SELECT id, saliase FROM {pre}gruppen ORDER by titel ASC');
-			while($row = $res->FetchArray())
-			{
-				if(($row['saliase'] ?? '') !== '') {
-					$domainList2 = explode(':', $row['saliase']);
-					foreach($domainList2 as $domain) {
-						if(!in_array($domain, $domainList)) {
-							$domainList[] = $domain;
-						}
-					}
-				}
-			}
-			$res->Free();
-	
-			$tpl->assign('domainList', $domainList);
 			$_REQUEST['user_hidden'] = $_REQUEST['user'];
 		}
 
 		/**
-		 * Step 3: Alias data was entered and should be processed
-		 * Check for email_domain as indicator for alias creation
+		 * Step 3: Contact data was entered and should be processed
+		 * Check for first or last name as indicator for contact creation
 		 */
-		if(isset($_REQUEST['email_domain'])) {
+		if(($_REQUEST['vorname'] ?? '') !== '' || ($_REQUEST['nachname'] ?? '') !== '') {
 			$tpl_use = 3;
-			$tpl_email_locked = false;
 
 			/**
-			 * Determine email address for alias:
-			 * - If typ_1_email is provided, use it directly
-			 * - Otherwise, construct from local part and domain
+			 * Determine target users for contact creation:
+			 * - Group = all (-1) AND User = all (-1) → All users
+			 * - Group = specific AND User = all (-1) → All users of group
+			 * - Group = specific AND User = specific → Single user
 			 */
-			if(($_REQUEST['typ_1_email'] ?? '') !== '') {
-				$emailAddress = $_REQUEST['typ_1_email'];
+			if(($_REQUEST['gruppe_hidden'] ?? 0) == -1 && ($_REQUEST['user_hidden'] ?? 0) == -1) {
+				$res = $db->Query('SELECT id, email, vorname, nachname FROM {pre}users');
+			} elseif(($_REQUEST['gruppe_hidden'] ?? 0) != -1 && ($_REQUEST['user_hidden'] ?? 0) == -1) {
+				$res = $db->Query('SELECT id, email, vorname, nachname FROM {pre}users WHERE gruppe=?', 
+					(int)($_REQUEST['gruppe_hidden'] ?? 0));
 			} else {
-				$emailAddress = ($_REQUEST['email_local'] ?? '') . '@' . $_REQUEST['email_domain'];
+				$res = $db->Query('SELECT id, email, vorname, nachname FROM {pre}users WHERE id=?', 
+					(int)($_REQUEST['user_hidden'] ?? 0));
 			}
 
 			/**
-			 * Check if email address is already taken by users
+			 * Contact creation for all found users
+			 * Uses the b1gMail Addressbook class
 			 */
-			$res = $db->Query('SELECT id FROM {pre}users WHERE email=?', $emailAddress);
-			if($res->RowCount() >= 1) {
-				$tpl_email_locked = true;
+			while($row = $res->FetchArray())
+			{
+				// Load addressbook class for each user
+				include_once('../serverlib/addressbook.class.php');
+				
+				/**
+				 * Create addressbook interface for current user
+				 * @var BMAddressbook $book
+				 */
+				$book = _new('BMAddressbook', [(int)$row['id']]);
+
+				// Contact groups (currently empty, can be extended)
+				$groups = [];
+				
+				/**
+				 * Create address book entry
+				 * All contact data from $_REQUEST is passed
+				 */
+				$contactID = $book->AddContact(
+					$_REQUEST['firma'] ?? '',           // Company name
+					$_REQUEST['vorname'] ?? '',         // First name
+					$_REQUEST['nachname'] ?? '',        // Last name
+					$_REQUEST['strassenr'] ?? '',       // Street and house number
+					$_REQUEST['plz'] ?? '',             // Postal code
+					$_REQUEST['ort'] ?? '',             // City
+					$_REQUEST['land'] ?? '',            // Country
+					$_REQUEST['tel'] ?? '',             // Phone number
+					$_REQUEST['fax'] ?? '',             // Fax number
+					$_REQUEST['handy'] ?? '',           // Mobile number
+					$_REQUEST['email'] ?? '',           // Email address
+					$_REQUEST['work_strassenr'] ?? '',  // Business street
+					$_REQUEST['work_plz'] ?? '',        // Business postal code
+					$_REQUEST['work_ort'] ?? '',        // Business city
+					$_REQUEST['work_land'] ?? '',       // Business country
+					$_REQUEST['work_tel'] ?? '',        // Business phone number
+					$_REQUEST['work_fax'] ?? '',        // Business fax number
+					$_REQUEST['work_handy'] ?? '',      // Business mobile number
+					$_REQUEST['work_email'] ?? '',      // Business email
+					$_REQUEST['anrede'] ?? '',          // Salutation
+					$_REQUEST['position'] ?? '',        // Position/job
+					$_REQUEST['web'] ?? '',             // Website
+					$_REQUEST['kommentar'] ?? '',       // Comment/notes
+					SmartyDateTime('geburtsdatum_'),    // Birth date (Smarty format)
+					($_REQUEST['default'] ?? '') === 'work' ? ADDRESS_WORK : ADDRESS_PRIVATE, // Default address type
+					$groups,                            // Contact groups
+					false,                              // Not as default contact
+					false                               // Not as favorite
+				);
 			}
 			$res->Free();
 
 			/**
-			 * Check if email address is already taken by aliases
-			 */
-			$res = $db->Query('SELECT id FROM {pre}aliase WHERE email=?', $emailAddress);
-			if($res->RowCount() >= 1) {
-				$tpl_email_locked = true;
-			}
-			$res->Free();
-
-			/**
-			 * Create alias if email address is available
-			 */
-			if($tpl_email_locked === false) {
-				if(($_REQUEST['typ_1_email'] ?? '') !== '') {
-					/**
-					 * Type 1: Sender alias (external email address)
-					 * User can send emails from this external address
-					 */
-					$db->Query('INSERT INTO {pre}aliase(email,user,type,date) VALUES(?,?,?,?)',
-						$emailAddress,
-						(int)($_REQUEST['user_hidden'] ?? 0),
-						1,
-						(int)time());
-				} else {
-					/**
-					 * Type 3: Full alias (both sender and recipient)
-					 * User can send and receive emails with this address
-					 */
-					$db->Query('INSERT INTO {pre}aliase(email,user,type,date) VALUES(?,?,?,?)',
-						$emailAddress,
-						(int)($_REQUEST['user_hidden'] ?? 0),
-						3,
-						(int)time());
-				}
-			}
-			
-			/**
-			 * Reset form after successful alias creation
+			 * Reset form after successful contact creation
 			 * Prevents duplicate creation on page refresh
 			 */
 			$_REQUEST['gruppe_hidden'] = "";
@@ -362,8 +374,7 @@ class addalias extends BMPlugin
 		$tpl->assign('selected_gruppe', $_REQUEST['gruppe_hidden'] ?? '');    // Selected group
 		$tpl->assign('selected_user', $_REQUEST['user_hidden'] ?? '');        // Selected user
 		$tpl->assign('tpl_use', $tpl_use);                                    // Current template step
-		$tpl->assign('tpl_email_locked', $tpl_email_locked ?? false);         // Email address availability
-	}
+	}	
 }
 
 /**
@@ -375,4 +386,4 @@ class addalias extends BMPlugin
  * 
  * @global object $plugins b1gMail plugin manager
  */
-$plugins->registerPlugin('addalias');
+$plugins->registerPlugin('addcontact');
