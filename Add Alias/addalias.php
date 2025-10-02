@@ -357,12 +357,12 @@ class addalias extends BMPlugin
 		 * Assign template variables for display
 		 * All data is passed to the template
 		 */
-		$tpl->assign('gruppen', $gruppen);                                    // Available groups
-		$tpl->assign('users', $users);                                        // Available users
-		$tpl->assign('selected_gruppe', $_REQUEST['gruppe_hidden'] ?? '');    // Selected group
-		$tpl->assign('selected_user', $_REQUEST['user_hidden'] ?? '');        // Selected user
-		$tpl->assign('tpl_use', $tpl_use);                                    // Current template step
-		$tpl->assign('tpl_email_locked', $tpl_email_locked ?? false);         // Email address availability
+		$tpl->assign('gruppen', 			$gruppen);                                    // Available groups
+		$tpl->assign('users', 				$users);                                        // Available users
+		$tpl->assign('selected_gruppe',		$_REQUEST['gruppe_hidden'] ?? '');    // Selected group
+		$tpl->assign('selected_user',		$_REQUEST['user_hidden'] ?? '');        // Selected user
+		$tpl->assign('tpl_use',				$tpl_use);                                    // Current template step
+		$tpl->assign('tpl_email_locked',	$tpl_email_locked ?? false);         // Email address availability
 	}
 }
 
