@@ -7,7 +7,7 @@ declare(strict_types=1);
  * Enables SMS-based two-factor authentication for b1gMail.
  * Users can receive TAN codes via SMS for secure login.
  * 
- * @version 1.2.3
+ * @version 1.3.0
  * @since PHP 8.3
  * @license GPL
  */
