@@ -1,0 +1,1 @@
+{if $smarty_tpl==0}{$text}{else}{eval var=$text}{/if}
