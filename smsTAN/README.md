@@ -30,3 +30,4 @@ Mit diesem Plugin können Benutzer sich sicher über SMS-TAN-Codes anmelden. Das
 2. Im Adminbereich unter "Plugins" das Plugin aktivieren
 3. SMS-Service konfigurieren (falls noch nicht geschehen)
 4. Plugin-Einstellungen über "Plugins" → "smsTAN" anpassen
+
