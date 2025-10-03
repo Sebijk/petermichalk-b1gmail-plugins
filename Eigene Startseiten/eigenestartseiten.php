@@ -18,6 +18,7 @@ class eigenestartseiten extends BMPlugin
 	 */
 	private const ADMIN_PAGE1 = 'page1';
 	private const ADMIN_PAGE2 = 'page2';
+	private const ADMIN_PAGE3 = 'page3';
 
 	/**
 	 * PHP 8.3: Readonly properties for immutable values
@@ -84,6 +85,12 @@ class eigenestartseiten extends BMPlugin
 				'active'	=> $action === self::ADMIN_PAGE2,
 				'icon'		=> './templates/images/extension_add.png'
 			],
+			2 => [
+				'title'		=> $lang_admin['prefs'],
+				'link'		=> $this->_adminLink() . '&action=' . self::ADMIN_PAGE3 . '&',
+				'active'	=> $action === self::ADMIN_PAGE3,
+				'icon'		=> './templates/images/ico_prefs_defaults.png'
+			],
 		];
 		$tpl->assign('tabs', $tabs);
 
@@ -94,7 +101,7 @@ class eigenestartseiten extends BMPlugin
 		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('eigenestartseiten2.pref.tpl'));
 			$this->_Page2();
-		} else if($_REQUEST['action'] == 'page3') {
+		} elseif($_REQUEST['action'] === self::ADMIN_PAGE3) {
 			$tpl->assign('page', $this->_templatePath('eigenestartseiten3.pref.tpl'));
 			$this->_Page3();
 		}
@@ -103,17 +110,21 @@ class eigenestartseiten extends BMPlugin
 	/**
 	 * Language variables handler
 	 * 
-	 * Loads language-specific variables for the plugin.
+	 * Loads and defines all required language variables for the plugin.
+	 * Overrides or extends existing language variables.
 	 * 
-	 * @param array $lang_user User language variables (by reference)
-	 * @param array $lang_client Client language variables (by reference)
-	 * @param array $lang_custom Custom language variables (by reference)
-	 * @param array $lang_admin Admin language variables (by reference)
-	 * @param string $lang Language identifier
+	 * @param array $lang_user Reference to user language variables
+	 * @param array $lang_client Reference to client language variables
+	 * @param array $lang_custom Reference to custom language variables
+	 * @param array $lang_admin Reference to admin language variables
+	 * @param string $lang Current language
 	 * @return void
+	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
+	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
 	{
+		global $lang_user;
+
 		$lang_admin['eigenestartseiten_name']			= 'Eigene Startseiten';
 		$lang_admin['eigenestartseiten_text']			= 'Erstellen Sie eigene Startseiten im "Eingeloggten" oder "Nicht eingeloggten" Bereich.';
 
@@ -136,12 +147,13 @@ class eigenestartseiten extends BMPlugin
 	}
 
 	/**
-	 * Plugin installation routine
+	 * Plugin installation
 	 * 
-	 * Creates necessary database tables and adds required preferences.
+	 * Performs all necessary steps for plugin installation.
+	 * Creates database tables, configures settings and logs
+	 * the installation process.
 	 * 
-	 * @return bool Returns true on successful installation
-	 * @global object $db Database connection
+	 * @return bool True on successful installation, false on errors
 	 */
 	public function Install(): bool
 	{
@@ -170,12 +182,13 @@ class eigenestartseiten extends BMPlugin
 	}
 
 	/**
-	 * Plugin uninstallation routine
+	 * Plugin uninstallation
 	 * 
-	 * Removes database tables and preferences created during installation.
+	 * Performs all necessary steps for plugin uninstallation.
+	 * Removes database tables, cleans up configurations and logs
+	 * the uninstallation process.
 	 * 
-	 * @return bool Returns true on successful uninstallation
-	 * @global object $db Database connection
+	 * @return bool True on successful uninstallation, false on errors
 	 */
 	public function Uninstall(): bool
 	{
