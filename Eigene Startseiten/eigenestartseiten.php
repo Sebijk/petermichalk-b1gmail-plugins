@@ -4,15 +4,21 @@ declare(strict_types=1);
 /**
  * Eigene Startseiten Plugin
  * 
- * This plugin allows administrators to create custom start pages for users.
- * Users can be redirected to custom pages instead of the default b1gMail interface.
- * 
+ * With this plugin you can create custom start pages for groups, individual users
+ * or directly for all users from the admin area.
+ *  
  * @version 1.3.0
  * @since PHP 8.3
  * @license GPL
  */
 class eigenestartseiten extends BMPlugin 
 {
+	/**
+	 * Action constants for admin pages
+	 */
+	private const ADMIN_PAGE1 = 'page1';
+	private const ADMIN_PAGE2 = 'page2';
+
 	/**
 	 * PHP 8.3: Readonly properties for immutable values
 	 */
@@ -39,7 +45,7 @@ class eigenestartseiten extends BMPlugin
 		$this->designedfor			= '7.3.0';
 		$this->type					= BMPLUGIN_DEFAULT;
 
-		$this->author				= $this->pluginAuthor;
+		$this->author				= $this->pluginAuthor;	
 
 		$this->admin_pages			= true;
 		$this->admin_page_title		= $this->pluginName;
@@ -47,46 +53,45 @@ class eigenestartseiten extends BMPlugin
 	}
 
 	/**
-	 * Admin handler for plugin pages and tabs
+	 * Admin handler for plugin pages
+	 * 
+	 * Manages navigation and display of admin pages.
+	 * Creates tabs for different areas and forwards to corresponding
+	 * template files.
 	 * 
 	 * @return void
+	 * @global object $tpl Template engine
+	 * @global array $lang_admin Language variables for admin area
 	 */
 	public function AdminHandler(): void
 	{
-		global $tpl, $lang_admin, $lang_user;
+		global $tpl, $lang_admin;
 
-		// Plugin aufruf ohne Action
-		if(!isset($_REQUEST['action']))
-			$_REQUEST['action'] = 'page1';
+		// Plugin call without action
+		$action = $_REQUEST['action'] ?? self::ADMIN_PAGE1;
 
-		// Tabs im Adminbereich
-		$tabs = array(
-			0 => array(
-				'title'		=> $lang_user['start'],
-				'link'		=> $this->_adminLink() . '&action=page1&',
-				'active'	=> $_REQUEST['action'] == 'page1',
+		// Tabs in admin area
+		$tabs = [
+			0 => [
+				'title'		=> $lang_admin['start'],
+				'link'		=> $this->_adminLink() . '&action=' . self::ADMIN_PAGE1 . '&',
+				'active'	=> $action === self::ADMIN_PAGE1,
 				'icon'		=> '../plugins/templates/images/eigenestartseiten_logo.png'
-			),
-			1 => array(
+			],
+			1 => [
 				'title'		=> $lang_admin['create'],
-				'link'		=> $this->_adminLink() . '&action=page2&',
-				'active'	=> $_REQUEST['action'] == 'page2',
+				'link'		=> $this->_adminLink() . '&action=' . self::ADMIN_PAGE2 . '&',
+				'active'	=> $action === self::ADMIN_PAGE2,
 				'icon'		=> './templates/images/extension_add.png'
-			),
-			2 => array(
-				'title'		=> $lang_admin['prefs'],
-				'link'		=> $this->_adminLink() . '&action=page3&',
-				'active'	=> $_REQUEST['action'] == 'page3',
-				'icon'		=> './templates/images/ico_prefs_defaults.png'
-			),
-		);
+			],
+		];
 		$tpl->assign('tabs', $tabs);
 
-		// Plugin aufruf mit Action 
-		if($_REQUEST['action'] == 'page1') {
+		// Plugin call with action
+		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('eigenestartseiten1.pref.tpl'));
 			$this->_Page1();
-		} else if($_REQUEST['action'] == 'page2') {
+		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('eigenestartseiten2.pref.tpl'));
 			$this->_Page2();
 		} else if($_REQUEST['action'] == 'page3') {
@@ -95,10 +100,19 @@ class eigenestartseiten extends BMPlugin
 		}
 	}
 	
-	/*
-	*  Sprach variablen
-	*/
-	function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang)
+	/**
+	 * Language variables handler
+	 * 
+	 * Loads language-specific variables for the plugin.
+	 * 
+	 * @param array $lang_user User language variables (by reference)
+	 * @param array $lang_client Client language variables (by reference)
+	 * @param array $lang_custom Custom language variables (by reference)
+	 * @param array $lang_admin Admin language variables (by reference)
+	 * @param string $lang Language identifier
+	 * @return void
+	 */
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		$lang_admin['eigenestartseiten_name']			= 'Eigene Startseiten';
 		$lang_admin['eigenestartseiten_text']			= 'Erstellen Sie eigene Startseiten im "Eingeloggten" oder "Nicht eingeloggten" Bereich.';
@@ -121,14 +135,19 @@ class eigenestartseiten extends BMPlugin
 		$lang_admin['start'] 							= $lang_user['start'];
 	}
 
-	/*
-	 * installation routine
-	 */	
-	function Install()
+	/**
+	 * Plugin installation routine
+	 * 
+	 * Creates necessary database tables and adds required preferences.
+	 * 
+	 * @return bool Returns true on successful installation
+	 * @global object $db Database connection
+	 */
+	public function Install(): bool
 	{
 		global $db;
 
-		// create eigenestartseite table 
+		// Create eigenestartseite table 
 		$db->Query('CREATE TABLE IF NOT EXISTS `bm60_plugin_eigenestartseiten` (
 			`id` int(11) NOT NULL auto_increment,
 			`title` varchar(255) NOT NULL,
@@ -139,25 +158,30 @@ class eigenestartseiten extends BMPlugin
 
 		$db->Query('ALTER TABLE `{pre}plugin_eigenestartseiten` ADD `smarty` INT( 1 ) NOT NULL DEFAULT "0"');
 
-		// adds eigenestartseiten_li,  eigenestartseiten_nli,  eigenestartseiten_icon to prefs table
+		// Add eigenestartseiten preferences to prefs table
 		$db->Query('ALTER TABLE `{pre}prefs` ADD `eigenestartseiten_li` INT( 1 ) NOT NULL DEFAULT "1"');
 		$db->Query('ALTER TABLE `{pre}prefs` ADD `eigenestartseiten_nli` INT( 1 ) NOT NULL DEFAULT "1"');
 		$db->Query('ALTER TABLE `{pre}prefs` ADD `eigenestartseiten_icon` varchar(255) NOT NULL DEFAULT "start"');
 		$db->Query('ALTER TABLE `{pre}prefs` ADD `eigenestartseiten_icon_modern` varchar(255) NOT NULL DEFAULT "start"');
 		$db->Query('ALTER TABLE `{pre}prefs` ADD `eigenestartseiten_icon_modern_active` varchar(255) NOT NULL DEFAULT "start"');
 
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" wurde erfolgreich installiert.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return(true);
+		PutLog('Plugin "' . $this->name . ' - ' . $this->version . '" was successfully installed.', PRIO_PLUGIN, __FILE__, __LINE__);
+		return true;
 	}
 
-	/*
-	 * uninstallation routine
+	/**
+	 * Plugin uninstallation routine
+	 * 
+	 * Removes database tables and preferences created during installation.
+	 * 
+	 * @return bool Returns true on successful uninstallation
+	 * @global object $db Database connection
 	 */
-	function Uninstall()
+	public function Uninstall(): bool
 	{
 		global $db;
 
-		// drop table
+		// Drop table
 		$db->Query('DROP TABLE {pre}plugin_eigenestartseiten');
 
 		$db->Query('ALTER TABLE `{pre}prefs`
@@ -167,8 +191,8 @@ class eigenestartseiten extends BMPlugin
 			DROP `eigenestartseiten_icon_modern`,
 			DROP `eigenestartseiten_icon_modern_active`');
 
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" wurde erfolgreich deinstalliert.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return(true);
+		PutLog('Plugin "' . $this->name . ' - ' . $this->version . '" was successfully uninstalled.', PRIO_PLUGIN, __FILE__, __LINE__);
+		return true;
 	}
 
 	/*
