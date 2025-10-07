@@ -5,7 +5,7 @@
 Mit diesem Plugin können Administratoren eine Übersicht über alle POP3-Sammeldienste der Benutzer erhalten. Es ermöglicht die Verwaltung, Überwachung und den manuellen Abruf von POP3-Accounts direkt aus dem Admin-Bereich.
 
 - **Sprache:** Deutsch
-- **b1gMail Version:** 7.3.0
+- **b1gMail Version:** 7.4.1
 - **PHP Version:** 8.3
 
 ## Features

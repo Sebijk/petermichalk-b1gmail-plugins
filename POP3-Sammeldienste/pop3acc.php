@@ -8,24 +8,25 @@ declare(strict_types=1);
  * Allows administrators to manage and monitor POP3 accounts.
  * 
  * @version 1.2.0
- * @since PHP 8.3
+ * @since PHP 8.2
  * @license GPL
  */
 class pop3acc extends BMPlugin 
 {
 	/**
-	 * Action constants for admin pages
+	 * Plugin constants
 	 */
-	private const ADMIN_PAGE1 = 'page1';
-	private const ADMIN_PAGE2 = 'page2';
-	private const ADMIN_PAGE3 = 'page3';
+	private const PLUGIN_NAME 			= 'POP3-Sammeldienste';
+	private const PLUGIN_VERSION 		= '1.2.0';
+	private const PLUGIN_DESIGNEDFOR 	= '7.4.1';
+	private const PLUGIN_AUTHOR 		= 'Peter Michalk';
 
 	/**
-	 * PHP 8.3: Readonly properties for immutable values
+	 * Action constants for admin pages
 	 */
-	private readonly string $pluginName;
-	private readonly string $pluginVersion;
-	private readonly string $pluginAuthor;
+	private const ADMIN_PAGE1 			= 'page1';
+	private const ADMIN_PAGE2 			= 'page2';
+	private const ADMIN_PAGE3 			= 'page3';
 
 	/**
 	 * Plugin constructor
@@ -36,21 +37,16 @@ class pop3acc extends BMPlugin
 	 */
 	public function __construct()
 	{
-		// PHP 8.3: Initialize readonly properties
-		$this->pluginName 			= 'POP3-Sammeldienste';
-		$this->pluginVersion 		= '1.2.0';
-		$this->pluginAuthor 		= 'Peter Michalk';
-
-		$this->name 				= $this->pluginName;
-		$this->version 				= $this->pluginVersion;
-		$this->designedfor 			= '7.3.0';
+		$this->name 				= self::PLUGIN_NAME;
+		$this->version 				= self::PLUGIN_VERSION;
+		$this->designedfor 			= self::PLUGIN_DESIGNEDFOR;
 		$this->type 				= BMPLUGIN_DEFAULT;
 
-		$this->author 				= $this->pluginAuthor;
+		$this->author 				= self::PLUGIN_AUTHOR;
 
 		$this->admin_pages 			= true;
-		$this->admin_page_title 	= $this->pluginName;
-		$this->admin_page_icon 		= "pop3acc_icon.png";
+		$this->admin_page_title 	= self::PLUGIN_NAME;
+		$this->admin_page_icon 		= 'pop3acc_icon.png';
 	}
 
 	/**
@@ -71,7 +67,6 @@ class pop3acc extends BMPlugin
 		// Plugin call without action
 		$action = $_REQUEST['action'] ?? self::ADMIN_PAGE1;
 
-		// Tabs in admin area
 		$tabs = [
 			0 => [
 				'title' => $lang_admin['overview'],
@@ -90,18 +85,19 @@ class pop3acc extends BMPlugin
 				'link' => $this->_adminLink() . '&action=' . self::ADMIN_PAGE3 . '&',
 				'active' => $action === self::ADMIN_PAGE3,
 				'icon' => './templates/images/ico_prefs_receiving.png'
-			],
+			]
 		];
+
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('pop3acc1.pref.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('pop3acc2.pref.tpl'));
 			$this->_Page2();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE3) {
+		} elseif($action === self::ADMIN_PAGE3) {
 			$tpl->assign('page', $this->_templatePath('pop3acc3.pref.tpl'));
 			$this->_Page3();
 		}
@@ -121,14 +117,14 @@ class pop3acc extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		global $lang_user;
 
 		$lang_admin['pop3acc_name']				= 'POP3-Sammeldienste';
-		$lang_admin['pop3acc_text']				= 'Zeigt eine kleine &Uuml;bersicht, welcher Benutzer ein POP3 Sammeldienst besitzt.';
+		$lang_admin['pop3acc_text']				= 'Zeigt eine kleine Übersicht, welcher Benutzer ein POP3 Sammeldienst besitzt.';
 		$lang_admin['pop3acc_refresh']			= 'Abrufen';
-		$lang_admin['pop3acc_starttext']		= 'Hier k&ouml;nnen Sie E-Mails von allen externen POP3-Accounts einsammeln.';
+		$lang_admin['pop3acc_starttext']		= 'Hier können Sie E-Mails von allen externen POP3-Accounts einsammeln.';
 		
 		$lang_admin['lastfetch']				= $lang_user['lastfetch'];
 		$lang_admin['extpop3']					= $lang_user['extpop3'];
@@ -145,8 +141,15 @@ class pop3acc extends BMPlugin
 	 */
 	public function Install(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully installed.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		// log
+		PutLog(sprintf('%s v%s installed',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -159,8 +162,14 @@ class pop3acc extends BMPlugin
 	 */
 	public function Uninstall(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully uninstalled.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		PutLog(sprintf('%s v%s uninstalled',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -316,6 +325,7 @@ class pop3acc extends BMPlugin
 		$tpl->assign('start', isset($_REQUEST['start']));
 	}
 }
+
 /**
  * Plugin registration
  * 
