@@ -8,15 +8,23 @@ declare(strict_types=1);
  * of SMTP and POP3 servers from the admin area.
  * 
  * @version 1.2.0
- * @since PHP 8.3
+ * @since PHP 8.2
  * @license GPL
  */
 class availablecheck extends BMPlugin 
 {
 	/**
+	 * Plugin constants
+	 */
+	private const PLUGIN_NAME 			= 'AvailableCheck';
+	private const PLUGIN_VERSION 		= '1.2.0';
+	private const PLUGIN_DESIGNEDFOR 	= '7.4.1';
+	private const PLUGIN_AUTHOR 		= 'Peter Michalk';
+
+	/**
 	 * Action constants for admin pages
 	 */
-	private const ADMIN_PAGE1 = 'page1';
+	private const ADMIN_PAGE1 			= 'page1';
 
 	/**
 	 * POP3 connection object
@@ -29,13 +37,6 @@ class availablecheck extends BMPlugin
 	private ?object $_smtp = null;
 
 	/**
-	 * PHP 8.3: Readonly properties for immutable values
-	 */
-	private readonly string $pluginName;
-	private readonly string $pluginVersion;
-	private readonly string $pluginAuthor;
-
-	/**
 	 * Plugin constructor
 	 * 
 	 * Initializes all plugin properties and configurations.
@@ -44,21 +45,16 @@ class availablecheck extends BMPlugin
 	 */
 	public function __construct()
 	{
-		// PHP 8.3: Initialize readonly properties
-		$this->pluginName 			= 'AvailableCheck';
-		$this->pluginVersion 		= '1.2.0';
-		$this->pluginAuthor 		= 'Peter Michalk';
-
-		$this->name					= $this->pluginName;
-		$this->version				= $this->pluginVersion;
-		$this->designedfor			= '7.3.0';
+		$this->name					= self::PLUGIN_NAME;
+		$this->version				= self::PLUGIN_VERSION;
+		$this->designedfor			= self::PLUGIN_DESIGNEDFOR;
 		$this->type					= BMPLUGIN_DEFAULT;
 
-		$this->author				= $this->pluginAuthor;
+		$this->author				= self::PLUGIN_AUTHOR;
 
 		$this->admin_pages			= true;
-		$this->admin_page_title		= $this->pluginName;
-		$this->admin_page_icon		= "availablecheck_icon.png";
+		$this->admin_page_title		= self::PLUGIN_NAME;
+		$this->admin_page_icon		= 'availablecheck_icon.png';
 	}
 
 	/**
@@ -79,19 +75,19 @@ class availablecheck extends BMPlugin
 		// Plugin call without action
 		$action = $_REQUEST['action'] ?? self::ADMIN_PAGE1;
 
-		// Tabs in admin area
 		$tabs = [
 			0 => [
 				'title'		=> $lang_admin['overview'],
 				'link'		=> $this->_adminLink() . '&action=' . self::ADMIN_PAGE1 . '&',
 				'active'	=> $action === self::ADMIN_PAGE1,
 				'icon'		=> '../plugins/templates/images/availablecheck_logo.png'
-			],
+			]
 		];
+
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('availablecheck.admin.tpl'));
 			$this->_Page1();
 		}
@@ -111,15 +107,15 @@ class availablecheck extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
-		$lang_admin['availablecheck_name']		= "AvailableCheck";
-		$lang_admin['availablecheck_text']		= "Mit dem Plugin AvailableCheck l&auml;sst sich die Verf&uuml;gbarkeit und die Anmeldung des SMTP- und des POP3-Servers &uuml;berpr&uuml;fen";
+		$lang_admin['availablecheck_name']		= 'AvailableCheck';
+		$lang_admin['availablecheck_text']		= 'Mit dem Plugin AvailableCheck lässt sich die Verfügbarkeit und die Anmeldung des SMTP- und des POP3-Servers überprüfen';
 		
 		if(strpos($lang, 'deutsch') !== false) {
-			$lang_admin['availablecheck_connect']	= "Verbinden";
+			$lang_admin['availablecheck_connect']	= 'Verbinden';
 		} else {
-			$lang_admin['availablecheck_connect']	= "Connect";
+			$lang_admin['availablecheck_connect']	= 'Connect';
 		}
 	}
 
@@ -134,8 +130,15 @@ class availablecheck extends BMPlugin
 	 */
 	public function Install(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully installed.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		// log
+		PutLog(sprintf('%s v%s installed',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -149,8 +152,14 @@ class availablecheck extends BMPlugin
 	 */
 	public function Uninstall(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully uninstalled.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		PutLog(sprintf('%s v%s uninstalled',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -216,7 +225,7 @@ class availablecheck extends BMPlugin
 			$tpl->assign('pass', $pass);
 		}
 	}
-	
+
 	/**
 	 * Connect to POP3 server and test authentication
 	 * 

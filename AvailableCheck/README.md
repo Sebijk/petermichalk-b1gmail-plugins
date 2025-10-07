@@ -5,7 +5,7 @@
 Mit diesem Plugin können Sie die Verbindung und Authentifizierung von SMTP- und POP3-Servern direkt aus dem Adminbereich testen. Dies ist besonders nützlich für die Fehlerbehebung bei E-Mail-Problemen oder zur Überprüfung der Serverkonfiguration.
 
 - **Sprache:** Deutsch/Englisch
-- **b1gMail Version:** 7.3.0
+- **b1gMail Version:** 7.4.1
 - **PHP Version:** 8.3
 
 ## Features
