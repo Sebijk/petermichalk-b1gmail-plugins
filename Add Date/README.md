@@ -7,7 +7,7 @@ Mit diesem Plugin können Sie Gruppen, einzelnen Benutzern oder direkt allen Ben
 Wiederholungen, Gruppen und Teilnehmer sind NICHT auswählbar.
 
 - **Sprache:** Alle
-- **b1gMail Version:** 7.3.0
+- **b1gMail Version:** 7.4.1
 
 ## Installation‚
 

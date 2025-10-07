@@ -9,7 +9,7 @@ Ein Benutzer will 5 Aliase? In der Gruppe sind nur 4 definiert und Sie wollen fÃ
 Kein Problem, erstellen Sie einfach ein Alias mit diesem Plugin.
 
 - **Sprache:** Alle
-- **b1gMail Version:** 7.3.0
+- **b1gMail Version:** 7.4.1
 
 ## Installationâ€š
 

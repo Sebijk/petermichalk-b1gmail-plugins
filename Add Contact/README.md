@@ -5,7 +5,7 @@
 Mit diesem Plugin können Sie Gruppen, einzelnen Benutzern oder direkt allen Benutzern, einen Adressbucheintrag aus dem Adminbereich erstellen.
 
 - **Sprache:** Alle
-- **b1gMail Version:** 7.3.0
+- **b1gMail Version:** 7.4.1
 
 ## Installation
 

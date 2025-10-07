@@ -8,23 +8,23 @@ declare(strict_types=1);
  * or directly for all users from the admin area.
  * 
  * @version 1.2.0
- * @since PHP 8.3
+ * @since PHP 8.2
  * @license GPL
  */
 class addcontact extends BMPlugin 
 {
 	/**
+	 * Plugin constants
+	 */
+	private const PLUGIN_NAME 			= 'Add Contact';
+	private const PLUGIN_VERSION 		= '1.2.0';
+	private const PLUGIN_DESIGNEDFOR 	= '7.4.1';
+	private const PLUGIN_AUTHOR 		= 'Peter Michalk';
+	/**
 	 * Action constants for admin pages
 	 */
 	private const ADMIN_PAGE1 = 'page1';
 	private const ADMIN_PAGE2 = 'page2';
-
-	/**
-	 * PHP 8.3: Readonly properties for immutable values
-	 */
-	private readonly string $pluginName;
-	private readonly string $pluginVersion;
-	private readonly string $pluginAuthor;
 
 	/**
 	 * Plugin constructor
@@ -35,21 +35,16 @@ class addcontact extends BMPlugin
 	 */
 	public function __construct()
 	{
-		// PHP 8.3: Initialize readonly properties
-		$this->pluginName 			= 'Add Contact';
-		$this->pluginVersion 		= '1.2.0';
-		$this->pluginAuthor 		= 'Peter Michalk';
-
-		$this->name					= $this->pluginName;
-		$this->version				= $this->pluginVersion;
-		$this->designedfor			= '7.3.0';
+		$this->name					= self::PLUGIN_NAME;
+		$this->version				= self::PLUGIN_VERSION;
+		$this->designedfor			= self::PLUGIN_DESIGNEDFOR;
 		$this->type					= BMPLUGIN_DEFAULT;
 
-		$this->author				= $this->pluginAuthor;
+		$this->author				= self::PLUGIN_AUTHOR;
 
 		$this->admin_pages			= true;
-		$this->admin_page_title		= $this->pluginName;
-		$this->admin_page_icon		= "addcontact_icon.png";
+		$this->admin_page_title		= self::PLUGIN_NAME;
+		$this->admin_page_icon		= 'addcontact_icon.png';
 	}
 
 	/**
@@ -65,7 +60,7 @@ class addcontact extends BMPlugin
 	 */
 	public function AdminHandler(): void
 	{
-		global $tpl, $lang_admin;
+		global $tpl, $plugins, $lang_admin;
 
 		// Plugin call without action
 		$action = $_REQUEST['action'] ?? self::ADMIN_PAGE1;
@@ -83,15 +78,15 @@ class addcontact extends BMPlugin
 				'link'		=> $this->_adminLink() . '&action=' . self::ADMIN_PAGE2 . '&',
 				'active'	=> $action === self::ADMIN_PAGE2,
 				'icon'		=> './templates/images/faq32.png'
-			],
+			]
 		];
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('addcontact1.pref.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('addcontact2.pref.tpl'));
 		}
 	}
@@ -110,12 +105,10 @@ class addcontact extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
-		global $lang_user;
-
-		$lang_admin['addcontact_name']		= "Add Contact";
-		$lang_admin['addcontact_text']		= "With this plugin you can create address book entries for groups, individual users or directly for all users from the admin area.";
+		$lang_admin['addcontact_name']		= 'Add Contact';
+		$lang_admin['addcontact_text']		= 'With this plugin you can create address book entries for groups, individual users or directly for all users from the admin area.';
 
 		$lang_admin['addcontact']			= $lang_user['addcontact_name'] ?? '';
 		$lang_admin['surname']				= $lang_user['surname'] ?? '';
@@ -142,8 +135,15 @@ class addcontact extends BMPlugin
 	 */
 	public function Install(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully installed.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		// log
+		PutLog(sprintf('%s v%s installed',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -157,51 +157,20 @@ class addcontact extends BMPlugin
 	 */
 	public function Uninstall(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully uninstalled.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		// log
+		PutLog(sprintf('%s v%s uninstalled',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
-	/**
-	 * Main function for contact creation
-	 * 
-	 * This method is the core of the plugin. It:
-	 * - Loads all available groups from the database
-	 * - Loads users based on group selection
-	 * - Processes user input for contact creation
-	 * - Creates address book entries for selected users
-	 * - Assigns template variables
-	 * 
-	 * @return void
-	 * @global object $tpl Template engine
-	 * @global object $db Database connection
-	 * @global array $bm_prefs b1gMail settings
-	 * 
-	 * @uses $_REQUEST['gruppe'] User's group selection
-	 * @uses $_REQUEST['user'] User's user selection
-	 * @uses $_REQUEST['vorname'] First name of contact to be created
-	 * @uses $_REQUEST['nachname'] Last name of contact to be created
-	 * @uses $_REQUEST['firma'] Company name of contact to be created
-	 * @uses $_REQUEST['email'] Email address of contact to be created
-	 * @uses $_REQUEST['strassenr'] Street and house number
-	 * @uses $_REQUEST['plz'] Postal code
-	 * @uses $_REQUEST['ort'] City
-	 * @uses $_REQUEST['land'] Country
-	 * @uses $_REQUEST['tel'] Phone number
-	 * @uses $_REQUEST['fax'] Fax number
-	 * @uses $_REQUEST['handy'] Mobile number
-	 * @uses $_REQUEST['work_*'] Business contact data
-	 * @uses $_REQUEST['anrede'] Salutation
-	 * @uses $_REQUEST['position'] Position/job
-	 * @uses $_REQUEST['web'] Website
-	 * @uses $_REQUEST['kommentar'] Comment/notes
-	 * @uses $_REQUEST['default'] Default address type (work/private)
-	 */
 	private function _Page1(): void
 	{
-		global $tpl, $db, $bm_prefs;
-		
-		$tpl->assign('templ', $bm_prefs['template']);
-
+		global $tpl, $db;
 		/**
 		 * Determine template step:
 		 * 0 = Initial (select group)
@@ -369,11 +338,11 @@ class addcontact extends BMPlugin
 		 * Assign template variables for display
 		 * All data is passed to the template
 		 */
-		$tpl->assign('gruppen', $gruppen);                                    // Available groups
-		$tpl->assign('users', $users);                                        // Available users
-		$tpl->assign('selected_gruppe', $_REQUEST['gruppe_hidden'] ?? '');    // Selected group
-		$tpl->assign('selected_user', $_REQUEST['user_hidden'] ?? '');        // Selected user
-		$tpl->assign('tpl_use', $tpl_use);                                    // Current template step
+		$tpl->assign('gruppen',			$gruppen);                          // Available groups
+		$tpl->assign('users',			$users);                           	// Available users
+		$tpl->assign('selected_gruppe',	$_REQUEST['gruppe_hidden'] ?? '');	// Selected group
+		$tpl->assign('selected_user',	$_REQUEST['user_hidden'] ?? ''); 	// Selected user
+		$tpl->assign('tpl_use',			$tpl_use);                          // Current template step
 	}	
 }
 

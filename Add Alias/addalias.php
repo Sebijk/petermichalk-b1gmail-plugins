@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-
 /**
  * Add Alias Plugin
  * 
@@ -8,23 +7,24 @@ declare(strict_types=1);
  * or directly for all users from the admin area.
  *  
  * @version 1.2.0
- * @since PHP 8.3
+ * @since PHP 8.2
  * @license GPL
  */
 class addalias extends BMPlugin 
 {
 	/**
-	 * Action constants for admin pages
+	 * Plugin constants
 	 */
-	private const ADMIN_PAGE1 = 'page1';
-	private const ADMIN_PAGE2 = 'page2';
+	private const PLUGIN_NAME 			= 'Add Alias';
+	private const PLUGIN_VERSION 		= '1.2.0';
+	private const PLUGIN_DESIGNEDFOR 	= '7.4.1';
+	private const PLUGIN_AUTHOR 		= 'Peter Michalk';
 
 	/**
-	 * PHP 8.3: Readonly properties for immutable values
+	 * Action constants for admin pages
 	 */
-	private readonly string $pluginName;
-	private readonly string $pluginVersion;
-	private readonly string $pluginAuthor;
+	private const ADMIN_PAGE1 			= 'page1';
+	private const ADMIN_PAGE2 			= 'page2';
 
 	/**
 	 * Plugin constructor
@@ -35,21 +35,16 @@ class addalias extends BMPlugin
 	 */
 	public function __construct()
 	{
-		// PHP 8.3: Initialize readonly properties
-		$this->pluginName 			= 'Add Alias';
-		$this->pluginVersion 		= '1.2.0';
-		$this->pluginAuthor 		= 'Peter Michalk';
-
-		$this->name					= $this->pluginName;
-		$this->version				= $this->pluginVersion;
-		$this->designedfor			= '7.3.0';
+		$this->name					= self::PLUGIN_NAME;
+		$this->version				= self::PLUGIN_VERSION;
+		$this->designedfor			= self::PLUGIN_DESIGNEDFOR;
 		$this->type					= BMPLUGIN_DEFAULT;
 
-		$this->author				= $this->pluginAuthor;	
+		$this->author				= self::PLUGIN_AUTHOR;	
 
 		$this->admin_pages			= true;
-		$this->admin_page_title		= $this->pluginName;
-		$this->admin_page_icon		= "addalias_icon.png";
+		$this->admin_page_title		= self::PLUGIN_NAME;
+		$this->admin_page_icon		= 'addalias_icon.png';
 	}
 
 	/**
@@ -70,7 +65,6 @@ class addalias extends BMPlugin
 		// Plugin call without action
 		$action = $_REQUEST['action'] ?? self::ADMIN_PAGE1;
 
-		// Tabs in admin area
 		$tabs = [
 			0 => [
 				'title'		=> $lang_admin['create'],
@@ -83,19 +77,19 @@ class addalias extends BMPlugin
 				'link'		=> $this->_adminLink() . '&action=' . self::ADMIN_PAGE2 . '&',
 				'active'	=> $action === self::ADMIN_PAGE2,
 				'icon'		=> './templates/images/faq32.png'
-			],
+			]
 		];
-		$tpl->assign('tabs', $tabs);
 
+		$tpl->assign('tabs', $tabs);
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('addalias1.pref.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('addalias2.pref.tpl'));
 		}
 	}
-	
+
 	/**
 	 * Language variables handler
 	 * 
@@ -110,12 +104,10 @@ class addalias extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
-		global $lang_user;
-
-		$lang_admin['addalias_name']		= "Add Alias";
-		$lang_admin['addalias_text']		= "Mit diesem Plugin k&ouml;nnen Sie einzelnen Benutzern einen Alias erstellen.";
+		$lang_admin['addalias_name']		= 'Add Alias';
+		$lang_admin['addalias_text']		= 'Mit diesem Plugin k&ouml;nnen Sie einzelnen Benutzern einen Alias erstellen.';
 
 		$lang_admin['addresstaken']			= $lang_user['addresstaken'] ?? '';
 		$lang_admin['alias']				= $lang_user['alias'] ?? '';
@@ -134,8 +126,15 @@ class addalias extends BMPlugin
 	 */
 	public function Install(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully installed.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		// log
+		PutLog(sprintf('%s v%s installed',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -149,8 +148,14 @@ class addalias extends BMPlugin
 	 */
 	public function Uninstall(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully uninstalled.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		PutLog(sprintf('%s v%s uninstalled',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+		
+		return(true);
 	}
 
 	/**
@@ -357,12 +362,12 @@ class addalias extends BMPlugin
 		 * Assign template variables for display
 		 * All data is passed to the template
 		 */
-		$tpl->assign('gruppen', 			$gruppen);                                    // Available groups
-		$tpl->assign('users', 				$users);                                        // Available users
-		$tpl->assign('selected_gruppe',		$_REQUEST['gruppe_hidden'] ?? '');    // Selected group
-		$tpl->assign('selected_user',		$_REQUEST['user_hidden'] ?? '');        // Selected user
-		$tpl->assign('tpl_use',				$tpl_use);                                    // Current template step
-		$tpl->assign('tpl_email_locked',	$tpl_email_locked ?? false);         // Email address availability
+		$tpl->assign('gruppen', 			$gruppen);                              // Available groups
+		$tpl->assign('users', 				$users);                            	// Available users
+		$tpl->assign('selected_gruppe',		$_REQUEST['gruppe_hidden'] ?? '');    	// Selected group
+		$tpl->assign('selected_user',		$_REQUEST['user_hidden'] ?? '');     	// Selected user
+		$tpl->assign('tpl_use',				$tpl_use);                              // Current template step
+		$tpl->assign('tpl_email_locked',	$tpl_email_locked ?? false);         	// Email address availability
 	}
 }
 
