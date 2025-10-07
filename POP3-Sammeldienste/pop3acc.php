@@ -210,14 +210,14 @@ class pop3acc extends BMPlugin
 		// Query pop3acc and pop3user for Page1 display
 		$pop3acc = $pop3user = [];
 		$res = $db->Query('SELECT id, email, gruppe FROM {pre}users ORDER by ' . $sortBy . ' ' . $sortOrder);
-		while($row = $res->FetchArray())
+		while($row = $res->FetchArray(MYSQLI_ASSOC))
 		{
 			$res2 = $db->Query('SELECT * FROM {pre}pop3 WHERE user=?', 
 				(int) $row['id']);
 
 			if($res2->RowCount() >= 1)
 			{
-				while($row2 = $res2->FetchArray())
+				while($row2 = $res2->FetchArray(MYSQLI_ASSOC))
 				{
 					$pop3acc[$row2['id']] = [
 						'user_id' => $row['id'],
@@ -233,7 +233,7 @@ class pop3acc extends BMPlugin
 
 				$res3 = $db->Query('SELECT ownpop3 FROM {pre}gruppen WHERE id=?', 
 					(int) $row['gruppe']);
-				$gruppe = $res3->FetchArray();
+				$gruppe = $res3->FetchArray(MYSQLI_ASSOC);
 				$res3->Free();
 
 				$pop3user[$row['id']] = [

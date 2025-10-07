@@ -8,22 +8,23 @@ declare(strict_types=1);
  * Allows administrators to monitor shared folders and files across all users.
  * 
  * @version 1.2.0
- * @since PHP 8.3
+ * @since PHP 8.2
  * @license GPL
  */
 class showshares extends BMPlugin 
 {
 	/**
-	 * Action constants for admin pages
+	 * Plugin constants
 	 */
-	private const ADMIN_PAGE1 = 'page1';
+	private const PLUGIN_NAME 			= 'Show Shares';
+	private const PLUGIN_VERSION 		= '1.2.0';
+	private const PLUGIN_DESIGNEDFOR 	= '7.4.1';
+	private const PLUGIN_AUTHOR 		= 'Peter Michalk';
 
 	/**
-	 * PHP 8.3: Readonly properties for immutable values
+	 * Action constants for admin pages
 	 */
-	private readonly string $pluginName;
-	private readonly string $pluginVersion;
-	private readonly string $pluginAuthor;
+	private const ADMIN_PAGE1 			= 'page1';
 
 	/**
 	 * Plugin constructor
@@ -34,21 +35,16 @@ class showshares extends BMPlugin
 	 */
 	public function __construct()
 	{
-		// PHP 8.3: Initialize readonly properties
-		$this->pluginName 			= 'Show Shares';
-		$this->pluginVersion 		= '1.2.0';
-		$this->pluginAuthor 		= 'Peter Michalk';
-
-		$this->name 				= $this->pluginName;
-		$this->version 				= $this->pluginVersion;
-		$this->designedfor 			= '7.3.0';
+		$this->name 				= self::PLUGIN_NAME;
+		$this->version 				= self::PLUGIN_VERSION;
+		$this->designedfor 			= self::PLUGIN_DESIGNEDFOR;
 		$this->type 				= BMPLUGIN_DEFAULT;
 
-		$this->author 				= $this->pluginAuthor;
+		$this->author 				= self::PLUGIN_AUTHOR;
 
 		$this->admin_pages 			= true;
-		$this->admin_page_title 	= $this->pluginName;
-		$this->admin_page_icon 		= "showshares_icon.png";
+		$this->admin_page_title 	= self::PLUGIN_NAME;
+		$this->admin_page_icon 		= 'showshares_icon.png';
 	}
 
 	/**
@@ -69,19 +65,19 @@ class showshares extends BMPlugin
 		// Plugin call without action
 		$action = $_REQUEST['action'] ?? self::ADMIN_PAGE1;
 
-		// Tabs in admin area
 		$tabs = [
 			0 => [
 				'title' => $lang_admin['overview'],
 				'link' => $this->_adminLink() . '&action=' . self::ADMIN_PAGE1 . '&',
 				'active' => $action === self::ADMIN_PAGE1,
 				'icon' => '../plugins/templates/images/showshares_logo.png'
-			],
+			]
 		];
+
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('showshares.pref.tpl'));
 			$this->_Page1();
 		}
@@ -101,10 +97,10 @@ class showshares extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		$lang_admin['showshares_name']				= 'Show Shares';
-		$lang_admin['showshares_text']				= 'Zeigt eine kleine &Uuml;bersicht welcher Benutzer eine Webdisk Freigabe hat und welche Dateien dort enthalten sind.';
+		$lang_admin['showshares_text']				= 'Zeigt eine kleine Übersicht welcher Benutzer eine Webdisk Freigabe hat und welche Dateien dort enthalten sind.';
 		
 		$lang_admin['showshares_showall']			= 'Alle Ordner anzeigen.';
 	}
@@ -119,8 +115,15 @@ class showshares extends BMPlugin
 	 */
 	public function Install(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully installed.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		// log
+		PutLog(sprintf('%s v%s installed',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -133,8 +136,14 @@ class showshares extends BMPlugin
 	 */
 	public function Uninstall(): bool
 	{
-		PutLog('Plugin "'. $this->name .' - '. $this->version .'" was successfully uninstalled.', PRIO_PLUGIN, __FILE__, __LINE__);
-		return true;
+		PutLog(sprintf('%s v%s uninstalled',
+			$this->name,
+			$this->version),
+			PRIO_PLUGIN,
+			__FILE__,
+			__LINE__);
+
+		return(true);
 	}
 
 	/**
@@ -150,27 +159,28 @@ class showshares extends BMPlugin
 	private function _Page1(): void
 	{
 		global $tpl, $db;
-		
+
 		// Save settings
 		if(isset($_REQUEST['do']) && $_REQUEST['do'] == 'save') {
 			$this->_setPref("showall", $_REQUEST['showall']);
 		}
+
 		$showall = $this->_getPref("showall");
-		
+
 		// Load groups information
 		$groups = [];
 		$res = $db->Query('SELECT id, storage, webdisk, traffic, titel AS title FROM {pre}gruppen');
-		while($row = $res->FetchArray(MYSQL_ASSOC)) {
+		while($row = $res->FetchArray(MYSQLI_ASSOC)) {
 			$groups[$row['id']] = $row;
 		}
 		$res->Free();
-		
+
 		// Sort options
 		$sortBy = $_REQUEST['sortBy'] ?? 'folder.id';
 		$sortOrder = strtolower($_REQUEST['sortOrder'] ?? 'asc');
 
 		$folders = $files = [];
-		
+
 		// Query folders based on showall setting
 		if($showall) {
 			$res	 = $db->Query('SELECT folder.*, user.email, user.diskspace_used, (user.traffic_down+user.traffic_up) AS traffic, user.traffic_status, user.gruppe FROM {pre}diskfolders AS folder INNER JOIN {pre}users AS user On user.id = folder.user ORDER BY ' . $sortBy . ' ' . $sortOrder);
@@ -178,8 +188,8 @@ class showshares extends BMPlugin
 			$res	 = $db->Query('SELECT folder.*, user.email, user.diskspace_used, (user.traffic_down+user.traffic_up) AS traffic, user.traffic_status, user.gruppe FROM {pre}diskfolders AS folder INNER JOIN {pre}users AS user On user.id = folder.user WHERE folder.share = ? ORDER BY ' . $sortBy . ' ' . $sortOrder,
 				"yes");
 		}
-		
-		while($row = $res->FetchArray()) {
+
+		while($row = $res->FetchArray(MYSQLI_ASSOC)) {
 			$row['diskspace_max'] = $groups[$row['gruppe']]['webdisk'];
 			$row['traffic_max'] = $groups[$row['gruppe']]['traffic'];
 			$row['count'] = 0;
@@ -187,7 +197,7 @@ class showshares extends BMPlugin
 			// Count files in folder
 			$res2 = $db->Query('SELECT id, ordner, dateiname, size, contenttype FROM {pre}diskfiles WHERE ordner=?',
 				$row['id']);
-			while($row2 = $res2->FetchArray()) {
+			while($row2 = $res2->FetchArray(MYSQLI_ASSOC)) {
 				$files[] = $row2;
 				$row['count']++;
 			}
@@ -206,7 +216,7 @@ class showshares extends BMPlugin
 		$tpl->assign('files',			$files);
 		$tpl->assign('showall',			$showall);
 	}
-	
+
 	/**
 	 * Check if a plugin is installed
 	 * 
@@ -222,7 +232,7 @@ class showshares extends BMPlugin
 
 		$res = $db->Query('SELECT installed FROM {pre}mods WHERE modname = ?', $name);
 		if($res->RowCount() == 1) {
-			$row = $res->FetchArray(MYSQL_NUM);
+			$row = $res->FetchArray(MYSQLI_ASSOC);
 			$res->Free();
 			return (bool)$row[0];
 		} else {

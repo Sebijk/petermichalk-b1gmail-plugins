@@ -5,7 +5,7 @@
 Mit diesem Plugin können Administratoren alle Webdisk-Freigaben der Benutzer überwachen. Es bietet eine detaillierte Übersicht über geteilte Ordner, Dateien und Benutzerstatistiken für bessere Verwaltung der Webdisk-Funktionalität.
 
 - **Sprache:** Deutsch
-- **b1gMail Version:** 7.3.0
+- **b1gMail Version:** 7.4.1
 - **PHP Version:** 8.3
 
 ## Features
