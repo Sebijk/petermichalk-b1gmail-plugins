@@ -98,10 +98,10 @@ class lexikon extends BMPlugin
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('lexikon1.pref.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('lexikon2.pref.tpl'));
 			$this->_Page2();
 		}
@@ -121,7 +121,7 @@ class lexikon extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		$lang_admin['lexikon_name'] = PLUGIN_LEXIKON_NAME_TEXT;
 		$lang_admin['lexikon_text'] = 'Erstellen Sie ein eigenes ' . PLUGIN_LEXIKON_NAME_TEXT . ' und lassen Sie sich diese in b1gMail anzeigen.';
@@ -301,7 +301,7 @@ class lexikon extends BMPlugin
 	 * @return array Array of navigation pages
 	 * @global array $lang_user User language variables
 	 */
-	public function getUserPages(bool $loggedin): array
+	public function getUserPages($loggedin): array
 	{
 		global $lang_user;
 		
@@ -335,7 +335,7 @@ class lexikon extends BMPlugin
 	 * @global object $thisUser Current user object
 	 * @global array $lang_user User language variables
 	 */
-	public function FileHandler(string $file, string $action)
+	public function FileHandler($file, $action)
 	{
 		global $tpl, $db, $bm_prefs, $groupRow, $userRow, $currentLanguage, $thisUser, $lang_user;
 
@@ -388,7 +388,7 @@ class lexikon extends BMPlugin
 
 			$perPage = max(1, isset($_REQUEST['perPage']) ? (int)$_REQUEST['perPage'] : PLUGIN_LEXIKON_DEFAULTPERPAGE_CAT);
 			$res = $db->Query('SELECT COUNT(*) FROM {pre}mod_lexikon WHERE cat=? AND published=1', $_REQUEST['cat']);
-			list($lexCount) = $res->FetchArray(MYSQL_NUM);
+			list($lexCount) = $res->FetchArray(MYSQLI_NUM);
 			$res->Free();
 			$pageCount = ceil($lexCount / $perPage);
 			$pageNo = isset($_REQUEST['page']) ? max(1, min($pageCount, (int)$_REQUEST['page'])) : 1;
@@ -405,7 +405,7 @@ class lexikon extends BMPlugin
 			
 			$perPage = max(1, isset($_REQUEST['perPage']) ? (int)$_REQUEST['perPage'] : PLUGIN_LEXIKON_DEFAULTPERPAGE_CAT);
 			$res = $db->Query('SELECT COUNT(*) FROM {pre}mod_lexikon WHERE text LIKE ' . $q . ' AND published=1');
-			list($lexCount) = $res->FetchArray(MYSQL_NUM);
+			list($lexCount) = $res->FetchArray(MYSQLI_NUM);
 			$res->Free();
 			$pageCount = ceil($lexCount / $perPage);
 			$pageNo = isset($_REQUEST['page']) ? max(1, min($pageCount, (int)$_REQUEST['page'])) : 1;
@@ -418,7 +418,7 @@ class lexikon extends BMPlugin
 		} elseif(isset($_REQUEST['id'])) {
 			// Individual entry view
 			$res = $db->Query('SELECT title FROM {pre}mod_lexikon WHERE (id=? OR title=?) AND published=1', $_REQUEST['id'], $_REQUEST['id']);
-			list($title) = $res->FetchArray(MYSQL_NUM);
+			list($title) = $res->FetchArray(MYSQLI_NUM);
 			$title = $lang_user['lexikon'] . " - " . $title;
 			$res->Free();
 			$res = $db->Query('SELECT * FROM {pre}mod_lexikon WHERE (id=? OR title=?) AND published=1', $_REQUEST['id'], $_REQUEST['id']);
@@ -438,7 +438,7 @@ class lexikon extends BMPlugin
 		if($res->RowCount() < 1) {
 			$emtpy = true;
 		} else {
-			while(($row = $res->FetchArray(MYSQL_ASSOC)) !== false) {
+			while(($row = $res->FetchArray(MYSQLI_ASSOC)) !== false) {
 				if(isset($defaultpage)) {
 					if(strlen($row['text']) > PLUGIN_LEXIKON_MAXLETTERDEFAULTPAGE) {
 						$end = strpos($row['text'], " ", PLUGIN_LEXIKON_MAXLETTERDEFAULTPAGE);

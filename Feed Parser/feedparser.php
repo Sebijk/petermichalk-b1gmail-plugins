@@ -129,7 +129,7 @@ class feedparser extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user,  &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		global $lang_user;
 

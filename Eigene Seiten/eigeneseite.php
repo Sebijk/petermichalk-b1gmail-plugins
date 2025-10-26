@@ -109,15 +109,15 @@ class eigeneseiten extends BMPlugin
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('eigeneseiten1.pref.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('eigeneseiten2.pref.tpl'));
 			$this->_Page2();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE3) {
+		} elseif($action === self::ADMIN_PAGE3) {
 			$tpl->assign('page', $this->_templatePath('eigeneseiten3.pref.tpl'));
-		} elseif($_REQUEST['action'] === self::ADMIN_CACHE) {
+		} elseif($action === self::ADMIN_CACHE) {
 			$this->_Page4();
 		}
 	}
@@ -136,14 +136,14 @@ class eigeneseiten extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		global $lang_user;
 
 		$lang_admin['eigeneseiten_name']				= 'Eigene Seiten';
 		$lang_admin['eigeneseiten_text']				= 'Erstellen Sie eigene Seiten und lassen Sie diese in b1gMail anzeigen.';
 
-		if (strpos($lang, 'deutsch') !== false) {
+		if (str_contains($lang, 'deutsch')) {
 			$lang_admin['eigeneseiten_own']					= 'Eigene';
 			$lang_admin['eigeneseiten_linktitle']			= 'Link Title';
 			$lang_admin['eigeneseiten_published']			= 'ver&ouml;ffentlicht';

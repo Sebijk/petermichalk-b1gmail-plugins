@@ -103,16 +103,16 @@ class surbl extends BMPlugin
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('surbl1.pref.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('surbl2.pref.tpl'));
 			$this->_Page2();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE3) {
+		} elseif($action === self::ADMIN_PAGE3) {
 			$tpl->assign('page', $this->_templatePath('surbl3.pref.tpl'));
 			$this->_Page3();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE4) {
+		} elseif($action === self::ADMIN_PAGE4) {
 			$tpl->assign('page', $this->_templatePath('surbl4.pref.tpl'));
 			$this->_Page4();
 		}
@@ -131,7 +131,7 @@ class surbl extends BMPlugin
 	 * @param string $lang Current language
 	 * @return void
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user,&$lang_client,&$lang_custom, &$lang_admin, $lang): void
 	{
 		$lang_admin['surbl_name']					= "SURBL";
 		$lang_admin['surbl_text']					= "SURBL's sind Listen von Webseiten, die in unerwünschten E-Mails auftauchen.";		

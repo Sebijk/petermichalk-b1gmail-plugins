@@ -95,13 +95,13 @@ class eigenestartseiten extends BMPlugin
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('eigenestartseiten1.pref.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('eigenestartseiten2.pref.tpl'));
 			$this->_Page2();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE3) {
+		} elseif($action === self::ADMIN_PAGE3) {
 			$tpl->assign('page', $this->_templatePath('eigenestartseiten3.pref.tpl'));
 			$this->_Page3();
 		}
@@ -121,7 +121,7 @@ class eigenestartseiten extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		global $lang_user;
 

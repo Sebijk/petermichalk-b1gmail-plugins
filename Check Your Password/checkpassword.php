@@ -95,13 +95,13 @@ class checkpassword extends BMPlugin
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('checkpassword.page1.acp.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('checkpassword.page2.acp.tpl'));
 			$this->_Page2();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE3) {
+		} elseif($action === self::ADMIN_PAGE3) {
 			$tpl->assign('page', $this->_templatePath('checkpassword.page3.acp.tpl'));
 		}
 	}
@@ -120,7 +120,7 @@ class checkpassword extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		$lang_admin['checkpassword_name']						= "Check Your Password";
 		$lang_admin['checkpassword_text']						= "Fragt den Benutzer nach einer bestimmten Zeit vor jedem Login nach einem neuem Passwort.";
@@ -395,9 +395,9 @@ class checkpassword extends BMPlugin
 	/*
 	 * set preference
 	 */
-	function _SetPref($key, $value, $user)
+	function _SetPref($key, $value)
 	{
-		global $db;
+		global $db, $user;
 
 		$db->Query('REPLACE INTO {pre}userprefs(userID, `key`,`value`) VALUES(?, ?, ?)',
 			(int)$user,
@@ -409,16 +409,16 @@ class checkpassword extends BMPlugin
 	/*
 	 * get preference
 	 */
-	function _GetPref($key, $user)
+	function _GetPref($key)
 	{
-		global $db;
+		global $db, $user;
 
 		$res = $db->Query('SELECT `value` FROM {pre}userprefs WHERE userID=? AND `key`=?',
 			(int)$user,
 			$key);
 		if($res->RowCount() == 1)
 		{
-			$row = $res->FetchArray(MYSQL_NUM);
+			$row = $res->FetchArray(MYSQLI_NUM);
 			$res->Free();
 			return($row[0]);
 		}

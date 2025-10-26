@@ -22,7 +22,7 @@ class smstan extends BMPlugin
 	/**
 	 * Link automatisch anzeigen
 	 */
-	private const PLUGIN_LINK_ENABLED = true;
+	public const PLUGIN_LINK_ENABLED = true;
 
 	/**
 	 * PHP 8.3: Readonly properties for immutable values
@@ -95,10 +95,10 @@ class smstan extends BMPlugin
 		$tpl->assign('tabs', $tabs);
 
 		// Plugin call with action
-		if($_REQUEST['action'] === self::ADMIN_PAGE1) {
+		if($action === self::ADMIN_PAGE1) {
 			$tpl->assign('page', $this->_templatePath('smstan.page1.acp.tpl'));
 			$this->_Page1();
-		} elseif($_REQUEST['action'] === self::ADMIN_PAGE2) {
+		} elseif($action === self::ADMIN_PAGE2) {
 			$tpl->assign('page', $this->_templatePath('smstan.page2.acp.tpl'));
 			$this->_Page2();
 		}
@@ -118,7 +118,7 @@ class smstan extends BMPlugin
 	 * @return void
 	 * @global array $lang_user Global user language variables
 	 */
-	public function OnReadLang(array &$lang_user, array &$lang_client, array &$lang_custom, array &$lang_admin, string $lang): void
+	public function OnReadLang(&$lang_user, &$lang_client, &$lang_custom, &$lang_admin, $lang): void
 	{
 		$lang_user['smstan'] 		= $lang_admin['smstan_name']= 'smsTAN';
 		$lang_user['smstan_text']	= $lang_admin['smstan_text']= 'Ihnen wird per SMS ein Bestätigungscode auf Ihr Mobiltelefon gesendet. Die Anmeldung muss anschlie&szlig;end mit diesem Bestätigungscode best&auml;tigt werden.';
@@ -232,7 +232,7 @@ class smstan extends BMPlugin
 		}
 		
 		$res = $db->Query('SELECT COUNT(ip) AS c FROM {pre}mod_smstan_banip');
-		$row = $res->FetchArray(MYSQL_ASSOC);
+		$row = $res->FetchArray(MYSQLI_ASSOC);
 		$res->Free();
 
 		$tpl->assign('banips', 			$row['c']);
@@ -302,7 +302,7 @@ class smstan extends BMPlugin
 	 * @return array Array of navigation pages
 	 * @global array $lang_user User language variables
 	 */
-	public function getUserPages(bool $loggedin): array
+	public function getUserPages($loggedin): array
 	{
 		global $lang_user;
 
@@ -336,7 +336,7 @@ class smstan extends BMPlugin
 	 * @global object $thisUser Current user object
 	 * @global array $lang_user User language variables
 	 */
-	public function UserPrefsPageHandler(string $action): bool
+	public function UserPrefsPageHandler($action): bool
 	{
 		global $tpl, $db, $userRow, $thisUser, $lang_user;
 
@@ -404,7 +404,7 @@ class smstan extends BMPlugin
 	 * @global array $prefsIcons Preferences icons
 	 * @global array $groupRow Current group data
 	 */
-	public function FileHandler(string $file, string $action)
+	public function FileHandler($file, $action)
 	{
 		global $tpl, $db, $bm_prefs, $lang_user, $lang_custom, $prefsItems, $prefsImages, $prefsIcons, $groupRow;
 
@@ -785,7 +785,7 @@ class smstan extends BMPlugin
 
 		$res = $db->Query('SELECT id FROM {pre}mod_smstan_keys WHERE userid=? AND time > UNIX_TIMESTAMP()', $userid);
 		if ($res && $res->RowCount() > 0) {
-			$row = $res->FetchArray(MYSQL_NUM);
+			$row = $res->FetchArray(MYSQLI_NUM);
 			$res->Free();
 			return (int)$row[0];
 		}
@@ -839,7 +839,7 @@ class smstan extends BMPlugin
 		$result = [];
 		$res = $db->Query('SELECT id, titel FROM {pre}smstypen ORDER BY titel ASC');
 		if ($res) {
-			while ($row = $res->FetchArray(MYSQL_ASSOC)) {
+			while ($row = $res->FetchArray(MYSQLI_ASSOC)) {
 				$result[(int)$row['id']] = [
 					'id' => (int)$row['id'],
 					'title' => htmlspecialchars($row['titel'], ENT_QUOTES, 'UTF-8')
@@ -870,7 +870,7 @@ class smstan extends BMPlugin
 
 		$res = $db->Query('SELECT COUNT(ip) AS cip FROM {pre}mod_smstan_banip WHERE ip=? AND time > UNIX_TIMESTAMP()', $ip);
 		if ($res) {
-			$row = $res->FetchArray(MYSQL_ASSOC);
+			$row = $res->FetchArray(MYSQLI_ASSOC);
 			$res->Free();
 			$count = (int)$row['cip'];
 			return $count > 5;
@@ -981,7 +981,7 @@ class smstan extends BMPlugin
 
 		$res = $db->Query('SELECT SUM(credits) as paid FROM {pre}mod_smstan_log WHERE userid=? AND time > (UNIX_TIMESTAMP() - (30*24*60*60))', $userID);
 		if ($res && $res->RowCount() > 0) {
-			$row = $res->FetchArray(MYSQL_ASSOC);
+			$row = $res->FetchArray(MYSQLI_ASSOC);
 			$res->Free();
 			return (float)($row['paid'] ?? 0);
 		}
@@ -991,7 +991,7 @@ class smstan extends BMPlugin
 }
 
 // Link automatisch anzeigen
-define("PLUGIN_SMSTAN_LINK", smstan_plugin::PLUGIN_LINK_ENABLED);
+define("PLUGIN_SMSTAN_LINK", smstan::PLUGIN_LINK_ENABLED);
 
 /**
  * Plugin registration
@@ -1002,4 +1002,4 @@ define("PLUGIN_SMSTAN_LINK", smstan_plugin::PLUGIN_LINK_ENABLED);
  * 
  * @global object $plugins b1gMail plugin manager
  */
-$plugins->registerPlugin('smstan_plugin');
+$plugins->registerPlugin('smstan');
