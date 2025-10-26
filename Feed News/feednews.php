@@ -418,7 +418,7 @@ class feednews extends BMPlugin
 				}
 			}
 			$res			= $db->Query('SELECT COUNT(*) FROM {pre}mod_feednews_news');
-			list($newsCount)= $res->FetchArray(MYSQL_NUM);
+			list($newsCount)= $res->FetchArray(MYSQLI_NUM);
 			$res->Free();
 			$pageCount 		= ceil($newsCount / $perPage);
 			$pageNo 		= isset($_REQUEST['page']) ? max(1, min($pageCount, (int)$_REQUEST['page'])) : 1;
@@ -434,7 +434,7 @@ class feednews extends BMPlugin
 			
 			$perPage		= max(1, isset($_REQUEST['perPage']) ? (int)$_REQUEST['perPage'] : 30);
 			$res			= $db->Query('SELECT COUNT(*) FROM {pre}mod_feednews_news AS news INNER JOIN {pre}mod_feednews_rss AS rss On rss.id = news.rss WHERE news.category LIKE ' . $q);
-			list($newsCount)= $res->FetchArray(MYSQL_NUM);
+			list($newsCount)= $res->FetchArray(MYSQLI_NUM);
 			$res->Free();
 			$pageCount 		= ceil($newsCount / $perPage);
 			$pageNo 		= isset($_REQUEST['page']) ? max(1, min($pageCount, (int)$_REQUEST['page'])) : 1;
@@ -448,7 +448,7 @@ class feednews extends BMPlugin
 
 			$perPage		= max(1, isset($_REQUEST['perPage']) ? (int)$_REQUEST['perPage'] : 30);
 			$res			= $db->Query('SELECT COUNT(*), rss.title FROM {pre}mod_feednews_news AS news INNER JOIN {pre}mod_feednews_rss AS rss On rss.id = news.rss WHERE rss.id = ?', $_REQUEST['c']);
-			list($newsCount, $title2)= $res->FetchArray(MYSQL_NUM);
+			list($newsCount, $title2)= $res->FetchArray(MYSQLI_NUM);
 			$res->Free();
 			$pageCount 		= ceil($newsCount / $perPage);
 			$pageNo 		= isset($_REQUEST['page']) ? max(1, min($pageCount, (int)$_REQUEST['page'])) : 1;
@@ -504,7 +504,7 @@ class feednews extends BMPlugin
 				if($res->RowCount() < 1) {
 					$emtpy 	= true;
 				} else {
-					while(($row = $res->FetchArray(MYSQL_ASSOC)) !== false) {
+					while($row = $res->FetchArray(MYSQLI_ASSOC)) {
 						$offset 			= date("Z");
 						$row['rssdatum']	= date("D, j M Y H:i:s ", ($row['datum']-$offset)).'GMT';
 						$row['datum']		= $this->human_time_diff($row['datum']);
