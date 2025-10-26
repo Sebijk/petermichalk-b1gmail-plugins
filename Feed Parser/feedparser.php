@@ -372,7 +372,7 @@ class feedparser extends BMPlugin
 	 * @param string $action The action being performed
 	 * @return void
 	 */
-	public function FileHandler(string $file, string $action): void
+	public function FileHandler($file, $action): void
 	{
 		if($file == "index.php" && $action == "feedparser")
 		{

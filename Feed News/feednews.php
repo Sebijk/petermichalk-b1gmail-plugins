@@ -359,7 +359,7 @@ class feednews extends BMPlugin
 	 * @param string $action The action being performed
 	 * @return void
 	 */
-	public function FileHandler(string $file, string $action): void
+	public function FileHandler($file, $action): void
 	{
 		global $tpl, $lang_user, $cacheManager, $db;
 
